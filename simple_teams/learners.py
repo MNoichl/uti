@@ -99,7 +99,9 @@ class bayesian_gaussian_process:
         )
         self.current_utility = UtilityFunction(
             kind="ucb", kappa=self.kappa, xi=self.xi
-        )  # kappa = how exploratory
+        )  	# kappa = how exploratory
+        	# check function of xi
+        	# alpha how tolerant towards noice
         self.current_optimizer._gp.alpha = self.alpha
 
         if len(self.attempts) <= self.window:
