@@ -101,7 +101,7 @@ class bayesian_gaussian_process:
             kind="ucb", kappa=self.kappa, xi=self.xi
         )  	# kappa = how exploratory
         	# check function of xi
-        	# alpha how tolerant towards noice
+        	# alpha how tolerant towards noise
         self.current_optimizer._gp.alpha = self.alpha
 
         if len(self.attempts) <= self.window:
