@@ -5,10 +5,10 @@ import numpy as np
 # DISCLAIMER: this is very much work in progress
 
 
-def calculate_pre_set_n_agents(n, m, game_matrix): # omega = tr-probability, n = number agents, m = number action per agent, game_matrix is matrix with r cells and n-tuples per cell
+def calculate_pre_set_n_agents(n, game_matrix): # omega = tr-probability, n = number agents, m = number action per agent, game_matrix is matrix with r cells and n-tuples per cell
     all_coordinates_in_game = list(
         itertools.product(*[list(range(x)) for x in game_matrix.shape])
-    )
+    ) # Why is there no 'repeat' variable? Is this already the correct length?
     shaped_profiles = [] # np.zeros(m**(2*n)) # list; entries will be A's; how many A's are there? Should I create a list of zero's rather than an empty list?
     for index, team_plays in enumerate(all_coordinates_in_game): # index, tuple of n action for team reasoners
         for non_team_cell in all_coordinates_in_game: # tuple of n action for non-team reasoners
