@@ -24,8 +24,9 @@ def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-pro
     #) # Why is there no 'repeat' variable? Is this already the correct length?
     a = list(itertools.repeat(m, n)) # creates list of n times number m, indicating how many actions (m) each agent (in total n agents) has
     a.insert(0, m ** n) # adds number m**n on zero's position of a, this is now a tuple indicating how many actions the team and each agent has
-    a.append(n)
     shaped_utils = np.zeros(a)  # this is now an n+1 dimensional table in which each cell represents one possible profile; n dimensions have length m (each agent has m actions) the last dimension has length m**n (team has m**n actions)
+    # print(np.shape(shaped_utils))
+    # print(shaped_utils)
     for index, team_plays in enumerate(all_coordinates_in_game): # index, list of n action for team reasoners
         team_plays_list = list(team_plays)
         for non_team_cell in all_coordinates_in_game: # list of n actions for individual reasoners
@@ -46,9 +47,10 @@ def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-pro
             for profile in A:  # for one tuple
                 # print(type(profile[0]))
                 # print('position in game:', game_matrix[tuple(profile[0])])
-                # print('util in game:', game_matrix[tuple(profile[0])][0])
+                # print('util in game:', game_matrix[tuple(profile[0])][player])
                 util = util + ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1])) * game_matrix[tuple(profile[0])][player]) # calculating expected utility for team_play and non_team_cells, i.e. considering each profile in A multiplying the probability (depending on how many team reasoners) and its utility
             shaped_utils[index, non_team_cell] = util  # where do I get the index from?
+            # print('shaped utils:', shaped_utils)
     return shaped_utils # for each profile (indiv, tr) we will have a list of tuples containing profile combination of this profile (depending on whether agents play individual or team strategy) and number of team-reasoners
 
 

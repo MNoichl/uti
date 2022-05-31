@@ -9,7 +9,7 @@ def calculate_utils(omega, game_matrix):
     all_coordinates_in_game = list(
         itertools.product(*[list(range(x)) for x in game_matrix.shape])
     )
-    shaped_utils = np.zeros((4, 2, 2))
+    shaped_utils = np.zeros((4, 2, 2)) # np.zeros((number of (tr/non_tr)-combinations, number of strategies of player 0,..., number of strategies of player n ))
     count = 0
     for index, team_plays in enumerate(all_coordinates_in_game):
 
@@ -26,13 +26,13 @@ def calculate_utils(omega, game_matrix):
     return shaped_utils
 
 
-def team_reason(game_matrix_player_0, game_matrix_player_1, omega):
+def team_reason(game_matrix_player_0, game_matrix_player_1, omega): #welche form haben diese Argumente
 
-    # we need this to project  doewn from the team to the indiv.:
+    # we need this to project  down from the team to the individual:
     all_coordinates_in_game = list(
         itertools.product(*[list(range(x)) for x in game_matrix_player_0.shape])
     )
-    # print(all_coordinates_in_game)
+    print(all_coordinates_in_game)
 
     p_1 = calculate_utils(omega, game_matrix_player_0)
     p_2 = calculate_utils(omega, game_matrix_player_1)
@@ -46,6 +46,7 @@ def team_reason(game_matrix_player_0, game_matrix_player_1, omega):
     # all_players_payoff_array = np.zeros(p_1.shape)
     # print(all_players_payoff_array)
     for ix, players_payoffs in enumerate([t, p_1, p_2]):
+        # print(ix, players_payoffs)
         for iy, values in np.ndenumerate(players_payoffs):
             g[iy][ix] = Fraction(str(values))
             # all_players_payoff_array[iy][ix] = all_players_actual_utils[ix][iy]
