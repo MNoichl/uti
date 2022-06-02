@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "Running pre-commit hook to clear output"
+jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace notebooks/*.ipynb
+git add .
