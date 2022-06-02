@@ -5,7 +5,11 @@ from fractions import Fraction
 import os
 from .expected_util_nagents import calculate_utils_n_agents
 
+
+# DISCLAIMER: not done
+
 def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n matrices, one for each player with dimensions m**n (m number of actions), omega is number indicating team reasoners fraction
+    coordinates_game = list(itertools.product(*[list(range(x)) for x in game.shape]))
     utils = []
     i = 0 # looping thorugh all agents
     team_util = 0
@@ -33,7 +37,51 @@ def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n 
     f = open("current_game.nfg", "w")
     f.write(g.write())
     f.close()
+    
+    stream = os.popen("gambit-enumpure current_game.nfg -S")
+    output = stream.read()
+    NEs = output.split("\n")
+    
+    NEs = [x for x in NEs if len(x) != 0]
 
+    NEs = [x.replace("NE,", "").replace("\n", "") for x in NEs]
+
+    NEs = [[float(x) for x in y.split(",")] for y in NEs]
+    print(NEs)
+    
+    ###### the following code tries to replicate what has been done for 2 agents, however there must be a better way #####
+    
+    # players_strategies = {}
+    # for player in range(n+1):
+        # players_strategies[str(player)] = {
+            # "strategies": [],
+            # "utils": [],
+        # }
+        
+    # players_strategies["tr_consistent_payoffs"] = []
+   
+    # for NE in NEs:
+        # counter = 0
+        # NE_indices = []
+        # for player in range(n+1):
+            # n_options = len(g.players[player].strategies)
+            # strat = NE[counter : counter + n_options] # slices out n_options many strategies of the current player
+            # where_strat = np.where(strat)[0][0] # outputs strategy of current player in pure NE by creating a tuple of an array with indices of all non-zero values in strategy and then calling the first indice in the first array (however, there is only one anyway)
+            # if player == 0:
+                # players_strategies["tr_consistent_payoffs"].append(
+                    # game[coordinates_game[where_strat]] # where_strat is an int, here: the pure strategy the team plays
+                    # coordinates_games[where_strat] is a list of int, indicating the profile behind that strategy
+                    # game[coordinates_games[where_strat]] is a list of int, indicating the utils of the individual players for this profile
+                # )
+
+            # single_strat = np.zeros(game.shape[0])
+            # single_strat[np.array(all_coordinates_in_game)[where_strat, player-1]] = 1.0
+                # 
+                
+
+            # counter += n_options
+    
+    
     return 'game is now in gambit'
 
 

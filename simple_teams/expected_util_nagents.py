@@ -4,11 +4,9 @@ from typing import List, Any
 
 import numpy as np
 
-# DISCLAIMER: this is very much work in progress
-
 
 def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-probability, n = number agents, m = number action per agent, game_matrix is matrix with r cells and n-tuples per cell
-    #all_coordinates_in_game = list(itertools.product(game_matrix.shape, repeat=n)) #
+    #all_coordinates_in_game = list(itertools.product(game_matrix.shape, repeat=n))
     g = list(itertools.product(*[list(range(x)) for x in game_matrix.shape]))
     all_coordinates_in_game = []
     for profile in g:

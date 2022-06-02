@@ -26,7 +26,7 @@ def calculate_utils(omega, game_matrix):
     return shaped_utils
 
 
-def team_reason(game_matrix_player_0, game_matrix_player_1, omega): #welche form haben diese Argumente
+def team_reason(game_matrix_player_0, game_matrix_player_1, omega): #of what type are these inputs?
 
     # we need this to project  down from the team to the individual:
     all_coordinates_in_game = list(
@@ -77,17 +77,21 @@ def team_reason(game_matrix_player_0, game_matrix_player_1, omega): #welche form
             "utils": [],
             # "team_payoff": [],
         }
-    players_strategies["tr_consistent_payoffs"] = []
+    players_strategies["tr_consistent_payoffs"] = [] # for what is this?
     for NE in NEs:
         counter = 0
         NE_indices = []
         for player in range(3):  # len(g.players)):
             n_options = len(g.players[player].strategies)
-            strat = NE[counter : counter + n_options]
-            where_strat = np.where(strat)[0][0]
+            strat = NE[counter : counter + n_options] # slices out n_options many strategies of the current player
+            where_strat = np.where(strat)[0][0] # I do not understand what is happening here
+            # np.where(condition) functions like np.asarray().nonzero() (see: https://numpy.org/doc/stable/reference/generated/numpy.where.html)
+            # .nonzero() returns tuple of indices of non zero elements
+            # so np.where(strat) gives out first position of first array, i.e. the first strategy which is played with probability non 0, but since we are looking at a pure NE, there is only one such strategy
             if player == 0:
                 players_strategies["tr_consistent_payoffs"].append(
-                    game_matrix_player_0[all_coordinates_in_game[where_strat]]
+                    game_matrix_player_0[all_coordinates_in_game[where_strat]] # why not game_matrix_player_0[where_strat]?
+                    # Does this only work for symmetric games?
                 )
             # if player == 0:
             #     single_strat = np.zeros(game_matrix.shape[0])
@@ -96,7 +100,10 @@ def team_reason(game_matrix_player_0, game_matrix_player_1, omega): #welche form
 
             single_strat = np.zeros(game_matrix_player_0.shape[0])
             single_strat[np.array(all_coordinates_in_game)[where_strat, 0]] = 1.0
-
+            # indexing the different dimensions, hence where_strat'th element in 0th dimension, 0th element from 1st dimension
+            # sets the position of the strategy played by the 0th player (of the current NE) to 1.0
+            # why of the 0th player and not of the current player?
+            
             players_strategies[str(player)]["strategies"].append(single_strat)
 
             NE_indices.append(where_strat)
