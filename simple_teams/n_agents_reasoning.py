@@ -10,6 +10,10 @@ from .expected_util_nagents import calculate_utils_n_agents
 
 def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n matrices, one for each player with dimensions m**n (m number of actions), omega is number indicating team reasoners fraction
     coordinates_game = list(itertools.product(*[list(range(x)) for x in game.shape]))
+    game_shape = list(game.shape)
+    game_shape.pop()
+    profiles_game = list(itertools.product(*[list(range(x)) for x in game_shape]))
+    print(profiles_game)
     utils = []
     i = 0 # looping thorugh all agents
     team_util = 0
@@ -47,41 +51,47 @@ def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n 
     NEs = [x.replace("NE,", "").replace("\n", "") for x in NEs]
 
     NEs = [[float(x) for x in y.split(",")] for y in NEs]
-    print(NEs)
     
-    ###### the following code tries to replicate what has been done for 2 agents, however there must be a better way #####
+    # print(NEs)
     
-    # players_strategies = {}
-    # for player in range(n+1):
-        # players_strategies[str(player)] = {
-            # "strategies": [],
-            # "utils": [],
-        # }
-        
-    # players_strategies["tr_consistent_payoffs"] = []
-   
-    # for NE in NEs:
-        # counter = 0
-        # NE_indices = []
-        # for player in range(n+1):
-            # n_options = len(g.players[player].strategies)
-            # strat = NE[counter : counter + n_options] # slices out n_options many strategies of the current player
-            # where_strat = np.where(strat)[0][0] # outputs strategy of current player in pure NE by creating a tuple of an array with indices of all non-zero values in strategy and then calling the first indice in the first array (however, there is only one anyway)
-            # if player == 0:
-                # players_strategies["tr_consistent_payoffs"].append(
-                    # game[coordinates_game[where_strat]] # where_strat is an int, here: the pure strategy the team plays
-                    # coordinates_games[where_strat] is a list of int, indicating the profile behind that strategy
-                    # game[coordinates_games[where_strat]] is a list of int, indicating the utils of the individual players for this profile
-                # )
-
-            # single_strat = np.zeros(game.shape[0])
-            # single_strat[np.array(all_coordinates_in_game)[where_strat, player-1]] = 1.0
-                # 
+    strategies = {}
+    for player in range(n+1):
+        if player == 0:
+            for i in range(1,n+1):
+                strategies[str(i)+"_team"] = []
+        else:
+            strategies[str(player)+"_individual"] =[]
+    strategies["profiles"] = []
+            
+    for NE in NEs:
+        counter = 0
+        profile = []
+        for player in range(n+1):
+            options = len(g.players[player].strategies)
+            strat = NE[counter : counter + options]
+            
+            if player == 0:
+                for i in range(n):
+                    strategie_i_tr = [0]*m
+                    strategie_i_tr[profiles_game[np.where(strat)[0][0]][i]] = 1
+                    # print("current player", i)
+                    # print('profile team:',np.where(strat)[0][0])
+                    # print("actual profile",profiles_game[np.where(strat)[0][0]])
+                    # print("action by player i",profiles_game[np.where(strat)[0][0]][i])
+                    # print("that position in zero list:",strategie_i_tr[profiles_game[np.where(strat)[0][0]][i]])
+                    # print(strategie_i_tr)
+                    strategies[str(i+1)+"_team"].append(strategie_i_tr)
+                profile.append(np.where(strat)[0][0])
                 
-
-            # counter += n_options
+            else:
+                strategies[str(player)+"_individual"].append(strat)
+                profile.append(np.where(strat)[0][0])
+            counter += options
+        strategies["profiles"].append(profile)
+        
     
+    # print(strategies)
     
-    return 'game is now in gambit'
+    return strategies
 
 

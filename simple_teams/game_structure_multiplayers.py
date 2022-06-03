@@ -15,6 +15,7 @@ import collections
 import bisect
 
 from .team_reasoning import team_reason
+from .n_agents_reasoning import team_reasoning_n_agents
 
 import matplotlib.pyplot as plt
 
@@ -38,9 +39,10 @@ class game:
     def __init__( # this has to be modifyed for multiple players
         self,
         name="prisoners_dilemma",  # Standardwerte überdenken...
-        n_players=2,
+        n_players=3,
         n_choices=2,
-        payoffs=[[2, 2], [0, 0], [0, 0], [1, 1]],
+        payoffs=[[1,1,1], [1,1,2], [1,2,1], [-1,0,0], [2,1,1], [0,-1,0], [0,0,-1], [0,0,0]],
+        game_payoffs = np.array([[[[1,1,1], [1,1,2]], [[1,2,1], [-1,0,0]]], [[[2,1,1], [0,-1,0]],[[0,0,-1], [0,0,0]]]])
         size=dict(width=2200, height=1570),
     ):
         """[init function of game]
@@ -62,6 +64,7 @@ class game:
         self.tree = nx.balanced_tree(
             n_choices, n_players
         )  # This limits us to games with symmetric numbers of choices!
+        # What does it mean for a number to be symmetric?
         self.payoffs = payoffs
         self.size = size
         self.path_array = self.get_path_array()
@@ -71,7 +74,7 @@ class game:
         Plots the defined game as a Sankey diagram.
         """
         T = self.tree
-        print(type(self.payoffs))
+        
         distances_to_origin = []
         for node in T.nodes():
             distances_to_origin.append(len(nx.shortest_path(T, source=0, target=node)))
@@ -84,18 +87,18 @@ class game:
         for k in range(0, self.n_players):
             val = val * self.n_choices
             widths.append(val)
-
+            
         values = [widths[np.max(levels) - x] for x in levels]
-        # values = [(np.max(level) - x) * branches for x in level]
-
+        # values = [(np.max(level) - x) * branches for x in level]  
+        
         choice_counter = 1
         payoff_counter = 0
         for node, level in zip(list(T.nodes()), distances_to_origin):
-            #     print(node)
+            # print(node)
             #     print(level-1)
-            if level == 1:
+            if level == 1: # first node just labeled the initial node
                 T = nx.relabel_nodes(T, {node: "(" + str(node) + ") init"}, copy=True)
-            if level > 1 and level != np.max(distances_to_origin):
+            if level > 1 and level != np.max(distances_to_origin): # all non-terminal nodes labeled with players and choices
                 T = nx.relabel_nodes(
                     T,
                     {
@@ -112,7 +115,7 @@ class game:
                 choice_counter += 1
                 if choice_counter > self.n_choices:
                     choice_counter = 1
-            if level == np.max(distances_to_origin):
+            if level == np.max(distances_to_origin): # terminal nodes labeled with players, choices and utilities 
                 T = nx.relabel_nodes(
                     T,
                     {
@@ -130,9 +133,9 @@ class game:
                 )
                 choice_counter += 1
                 payoff_counter += 1
-                if choice_counter > self.n_players:
+                if choice_counter > self.n_choices: # players: Why players and not choices?
                     choice_counter = 1
-
+                    
         sankey_df = pd.DataFrame(
             np.array(T.edges(data=False)), columns=["source", "target"]
         )
@@ -171,7 +174,7 @@ class game:
                     choice_counter = 1
         return paths
 
-    def return_payoffs(self, choices_to_check):
+    def return_payoffs(self, choices_to_check): # what is the idea of this function and where do we need it?
 
         return self.payoffs[
             np.where(np.all(np.array(choices_to_check) == self.path_array, axis=1))[0][
@@ -201,15 +204,15 @@ class game:
         )
 
     def return_nashpy_equilibrium(self):
-        if self.n_players == 2: # is this refering to the number of players? if yes, needs to be modified for multiple players 
+        if self.n_players == 2:
             this_game = nash.Game(
                 self.return_players_matrix(0), self.return_players_matrix(1)
-            ) # this needs to be modified for multiple players
+            ) 
 
             return list(this_game.support_enumeration())
 
         else:
-            return "Equilibria for a n_players != 2 are not yet implemented."
+            return "Equilibria for a n_players != 2 are not yet implemented." # this needs to be modified for multiple players
 
     def return_non_trs_choice(self, mode="first"):  # This is bad!
         """
@@ -233,7 +236,7 @@ class game:
             elif mode == "multiple":
                 return np.flatnonzero(b == np.max(eq))
 
-    def set_up_TR_strategies(self, steps=100):
+    def set_up_TR_strategies(self, steps=100): # this need to be modified for multi players
         # print(self.name)
         # Alternative precomputed omega-approach:
         base_space = np.linspace(0.0, 1.0, steps)
@@ -241,9 +244,8 @@ class game:
         # present_utils = collections.OrderedDict()
 
         for omega in base_space:
-            players_strategies = team_reason(
-                self.return_players_matrix(0), self.return_players_matrix(1), omega
-            ) # this needs to be modified for multiple players
+            players_strategies = team_reasoning_n_agents(n_choices, n_players, self.game_payoffs, omega
+            )
             player_data[omega] = players_strategies
             # present_utils[omega] = exp_utils
 
@@ -257,7 +259,7 @@ class game:
         my_omegas, my_utils = [], []
         for at_omega in self.player_data:
             # print(self.player_data[at_omega][str(player)])
-            for this_util in self.player_data[at_omega][str(player)]["utils"]:
+            for this_util in self.player_data[at_omega][str(player)]["utils"]: # Do we want expected or actual utils here?
                 my_omegas.append(at_omega), my_utils.append(this_util)
 
         utils_frame = pd.DataFrame([my_omegas, my_utils]).T
