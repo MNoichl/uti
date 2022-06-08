@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 # Just allow n_choices to be a list, for asymmetric games?
 class game:
 
-    """An game-class to set up and visualize games.
+    """A game-class to set up and visualize games.
 
     Attributes:
         name (str): name of the game. maybe useful to keep track of things.
@@ -38,7 +38,7 @@ class game:
 
     def __init__( # this has to be modifyed for multiple players
         self,
-        name="prisoners_dilemma",  # Standardwerte überdenken...
+        name="3_players_PD",  
         n_players=3,
         n_choices=2,
         payoffs=[[1,1,1], [1,1,2], [1,2,1], [-1,0,0], [2,1,1], [0,-1,0], [0,0,-1], [0,0,0]],

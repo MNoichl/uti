@@ -38,17 +38,30 @@ def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-pro
                     profile_copy = non_team_cell_list.copy()
                     for j in subset:
                         profile_copy[j] = team_plays_list[j] # substituting individual actions with team actions for team reasoners
-                    A.append([profile_copy, k]) # saves profile-combinations with numbers of team reasoners respectively
+                    A.append([profile_copy, k, index, non_team_cell]) # saves profile-combinations with numbers of team reasoners respectively
                 k += 1
+
+                
+                
             util = 0
             # print('all possible profiles:', A)
             for profile in A:  # for one tuple
                 # print(type(profile[0]))
                 # print('position in game:', game_matrix[tuple(profile[0])])
                 # print('util in game:', game_matrix[tuple(profile[0])][player])
-                util = util + ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1])) * game_matrix[tuple(profile[0])][player]) # calculating expected utility for team_play and non_team_cells, i.e. considering each profile in A multiplying the probability (depending on how many team reasoners) and its utility
-            shaped_utils[index, non_team_cell] = util  # where do I get the index from?
-            # print('shaped utils:', shaped_utils)
+                util = util + ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1])) * game_matrix[tuple(profile[0])][player]) # ToDo: This is where we should insert a team utility function in case player = team 
+                # calculating expected utility for team_play and non_team_cells, i.e. considering each profile in A multiplying the probability (depending on how many team reasoners) and its utility
+                # print('probability:', ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1]))))
+                # print('util-piece:', util)
+            # print(util)
+            # print('position 1:',A[0][2])
+            # print('position 2:',A[0][3])
+            shaped_utils[A[0][2]][A[0][3]] = util  # index = played strategy by team 0 to 7, non_team_cell = played strategies by individuals; together building the index for the current utility in the (8, 2, 2, 2) shape
+            # print('where I put it:', shaped_utils[A[0][2], A[0][3]])
+            # print('corrected:', shaped_utils[A[0][2]][A[0][3]])
+            # print('where it should be:', shaped_utils[0,0,1,1])
+    # print('position 0,0,1,1:', shaped_utils[0, 0, 1, 1 ])
+    # print('shaped utils:', shaped_utils)
     return shaped_utils # for each profile (indiv, tr) we will have a list of tuples containing profile combination of this profile (depending on whether agents play individual or team strategy) and number of team-reasoners
 
 
