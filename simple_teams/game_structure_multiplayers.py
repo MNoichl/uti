@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
+import pygambit
+from fractions import Fraction
+import os
+
 
 
 import nashpy as nash
@@ -42,7 +46,7 @@ class game:
         n_players=3,
         n_choices=2,
         payoffs=[[1,1,1], [1,1,2], [1,2,1], [-1,0,0], [2,1,1], [0,-1,0], [0,0,-1], [0,0,0]],
-        game_payoffs = np.array([[[[1,1,1], [1,1,2]], [[1,2,1], [-1,0,0]]], [[[2,1,1], [0,-1,0]],[[0,0,-1], [0,0,0]]]])
+        game_payoffs = np.array([[[[1,1,1], [1,1,2]], [[1,2,1], [-1,0,0]]], [[[2,1,1], [0,-1,0]],[[0,0,-1], [0,0,0]]]]),
         size=dict(width=2200, height=1570),
     ):
         """[init function of game]
@@ -59,6 +63,7 @@ class game:
         self.name = name
         self.n_players = n_players
         self.n_choices = n_choices
+        self.game_payoffs = game_payoffs
 
         #         self.choice_labels
         self.tree = nx.balanced_tree(
@@ -194,16 +199,19 @@ class game:
             b = np.mean(np.array(self.payoffs), axis=1)
             return np.flatnonzero(b == np.max(b))
 
-    def return_players_matrix(self, player=0):
+    def return_players_matrix(self, player):
         """
         Returns a payoff-matrix for the player, indexed starting with 0.
         Not 100% sure, whether it's already correct...
         """
-        return np.array(self.payoffs)[:, player].reshape(
-            tuple([self.n_choices] * self.n_players)
-        )
+        a = list(np.shape(self.game_payoffs))
+        a.pop()
+        player_matrix = np.zeros(tuple(a))
+        for i, value in np.ndenumerate(player_matrix):
+            player_matrix[tuple(i)] = self.game_payoffs[tuple(i)][player]
+        return player_matrix
 
-    def return_nashpy_equilibrium(self):
+    def return_equilibrium(self):
         if self.n_players == 2:
             this_game = nash.Game(
                 self.return_players_matrix(0), self.return_players_matrix(1)
@@ -212,13 +220,39 @@ class game:
             return list(this_game.support_enumeration())
 
         else:
-            return "Equilibria for a n_players != 2 are not yet implemented." # this needs to be modified for multiple players
+            a = list(np.shape(self.game_payoffs))
+            a.pop()
+            g = pygambit.Game.new_table(a) # https://gambitproject.readthedocs.io/en/latest/pyapi.html
+            for ix in range(self.n_players): # ix takes int value from 0 to n-1, payoffs
+                for iy, value in np.ndenumerate(self.return_players_matrix(ix)): # iy is a n+1 tuple indicating the played strategies, values are the utils
+                    # print("input value:", ix, iy, value)
+                    g[iy][ix] = Fraction(str(value))#.limit_denominator()
 
-    def return_non_trs_choice(self, mode="first"):  # This is bad!
+            f = open("current_game2.nfg", "w")
+            f.write(g.write())
+            f.close()
+    
+            stream = os.popen("gambit-enumpure current_game2.nfg -S")
+            output = stream.read()
+            NEs = output.split("\n")
+            
+            NEs = [x for x in NEs if len(x) != 0]
+
+            NEs = [x.replace("NE,", "").replace("\n", "") for x in NEs]
+
+            NEs = [[float(x) for x in y.split(",")] for y in NEs]
+            
+            Nashs = np.array(NEs)
+            Nashs = Nashs.reshape((len(NEs), self.n_players, self.n_choices))
+            
+            return Nashs
+        
+        
+    def return_non_trs_choice(self, mode="first"):
         """
         returns indices of the choice(s) of a non-team-reasoner
         """
-        eq = self.return_nashpy_equilibrium()  # this ought to be redone in gambit!
+        eq = self.return_equilibrium()  # this ought to be redone in gambit!
 
         if isinstance(eq, str):
             return eq
@@ -244,7 +278,7 @@ class game:
         # present_utils = collections.OrderedDict()
 
         for omega in base_space:
-            players_strategies = team_reasoning_n_agents(n_choices, n_players, self.game_payoffs, omega
+            players_strategies = team_reasoning_n_agents(self.n_choices, self.n_players, self.game_payoffs, omega
             )
             player_data[omega] = players_strategies
             # present_utils[omega] = exp_utils
@@ -259,7 +293,7 @@ class game:
         my_omegas, my_utils = [], []
         for at_omega in self.player_data:
             # print(self.player_data[at_omega][str(player)])
-            for this_util in self.player_data[at_omega][str(player)]["utils"]: # Do we want expected or actual utils here?
+            for this_util in self.player_data[at_omega]["team_utilities"]:
                 my_omegas.append(at_omega), my_utils.append(this_util)
 
         utils_frame = pd.DataFrame([my_omegas, my_utils]).T
@@ -278,6 +312,8 @@ class game:
         ax.set_xlabel("Omega")
         ax.set_ylabel("Expected utility at equilibrium")
         ax.set_title(self.name)
+        
+            
 
     def return_TR_strategy(self, omega): # this needs to be modified for multiple players
 
@@ -288,8 +324,8 @@ class game:
         known_omegas = np.array(list(self.player_data.keys()))
         upper = known_omegas[known_omegas > omega].min()
         lower = known_omegas[known_omegas < omega].max()
-        upper_strategy = self.player_data[upper]["0"]["strategies"]
-        lower_strategy = self.player_data[lower]["0"]["strategies"]
+        upper_strategy = self.player_data[upper]["1_team"] # TODO: adapt to possibly asymmetric games; this now only works for player 1
+        lower_strategy = self.player_data[lower]["1_team"]
 
         # print(np.array_equal(upper_strategy, lower_strategy))
         if np.array_equal(upper_strategy, lower_strategy):
@@ -299,7 +335,7 @@ class game:
                 self.return_players_matrix(0), self.return_players_matrix(1), omega
             ) # this needs to be modified for multiple players
             self.player_data[omega] = additional_omega
-            return additional_omega["0"]["strategies"]
+            return additional_omega["1_team"]
 
 
 #######################################                   #################################

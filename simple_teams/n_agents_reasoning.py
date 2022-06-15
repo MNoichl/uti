@@ -17,16 +17,19 @@ def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n 
     utils = []
     i = 0 # looping thorugh all agents
     team_util = 0
-    while i < n:
+    for i in range(n):
         util_agent_i = calculate_utils_n_agents(omega, n, m, game, i)
         team_util = team_util + util_agent_i # summing over all utils of all agents, to build average
         utils.append(util_agent_i)
-        i += 1
-        print('util agent', i, util_agent_i)
-    print('teams utility:', team_util/n)
+        # print('util agent', i, util_agent_i)
+    # print('teams utility:', team_util/n)
+    team_utilities = np.array(team_util/n)
+    # print('team util:', team_utilities)
+    # print('team util type:', type(team_utilities))    
     utils.insert(0, team_util / n) # ToDo: THIS LIMITS US TO AVERAGE: if team utility is average we can compute it with the expected utilities, but what if it is another function? We should implement this in the expected_util_nagent function!
     # print(np.shape(utils))
     # print('util:', utils)
+    
     a = list(np.shape(team_util))
     # print(a)
     # print(np.shape(utils))
@@ -63,6 +66,8 @@ def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n 
         else:
             strategies[str(player)+"_individual"] =[]
     strategies["profiles"] = []
+    strategies["team_utilities"] = []
+    
             
     for NE in NEs:
         counter = 0
@@ -88,7 +93,9 @@ def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n 
                 strategies[str(player)+"_individual"].append(strat)
                 profile.append(np.where(strat)[0][0])
             counter += options
+        # print('type profile:', type(profile))
         strategies["profiles"].append(profile)
+        strategies["team_utilities"].append(team_utilities[tuple(profile)]) # turn profile into tuple such that it can be used as index
         
     
     # print(strategies)
