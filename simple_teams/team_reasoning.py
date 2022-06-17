@@ -32,7 +32,7 @@ def team_reason(game_matrix_player_0, game_matrix_player_1, omega): #of what typ
     all_coordinates_in_game = list(
         itertools.product(*[list(range(x)) for x in game_matrix_player_0.shape])
     )
-    print(all_coordinates_in_game)
+    # print(all_coordinates_in_game)
 
     p_1 = calculate_utils(omega, game_matrix_player_0)
     p_2 = calculate_utils(omega, game_matrix_player_1)

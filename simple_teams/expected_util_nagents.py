@@ -20,6 +20,28 @@ def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-pro
     #all_coordinates_in_game = list(
     #    itertools.product(*[list(range(x)) for x in game_matrix.shape])
     #) # Why is there no 'repeat' variable? Is this already the correct length?
+    
+    team_game = game_matrix
+    t = np.expand_dims(np.zeros(list(itertools.repeat(m, n))), axis=n)
+    # print('t', t)
+    # print('t-shape', t.shape)
+    # print(np.concatenate([t, team_game]))
+    # print(team_game)
+    for profile in all_coordinates_in_game:
+        team_util = 0
+        for i in range(n):
+            team_util += game_matrix[tuple(profile)][i]
+        team_util = team_util/n
+        # print(team_util)
+        # team_game[tuple(profile)].append(team_util) #I want to append "team_util" within team_game[tuple(profile)]
+        # well, actually I do not want to append but put it at the first position, hence if profile is (1,2,1) I want to add 4/3 at position 0, to get (4/3, 1, 2, 2)
+        # TODO: create np.array with team utils as elements and then stack to game
+        # print(team_game[tuple(profile)])
+        # print('game shape', team_game.shape)
+        # team_game[tuple(profile)[n] = team_util # why is this not working?
+        # print(team_game[tuple(profile)])
+    # print('new game:', team_game)
+    
     a = list(itertools.repeat(m, n)) # creates list of n times number m, indicating how many actions (m) each agent (in total n agents) has
     a.insert(0, m ** n) # adds number m**n on zero's position of a, this is now a tuple indicating how many actions the team and each agent has
     shaped_utils = np.zeros(a)  # this is now an n+1 dimensional table in which each cell represents one possible profile; n dimensions have length m (each agent has m actions) the last dimension has length m**n (team has m**n actions)

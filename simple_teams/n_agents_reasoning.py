@@ -13,7 +13,7 @@ def team_reasoning_n_agents(m, n, game, omega): # the game input is a list of n 
     game_shape = list(game.shape)
     game_shape.pop()
     profiles_game = list(itertools.product(*[list(range(x)) for x in game_shape]))
-    print(profiles_game)
+    # print(profiles_game)
     utils = []
     i = 0 # looping thorugh all agents
     team_util = 0
