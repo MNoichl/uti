@@ -7,6 +7,7 @@ import numpy as np
 
 def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-probability, n = number agents, m = number action per agent, game_matrix is matrix with r cells and n-tuples per cell
     #all_coordinates_in_game = list(itertools.product(game_matrix.shape, repeat=n))
+    # player is a int from 0 to n, 0 standing for the team, 1,...,n for the indiv agent respectively
     g = list(itertools.product(*[list(range(x)) for x in game_matrix.shape]))
     all_coordinates_in_game = []
     for profile in g:
@@ -21,26 +22,17 @@ def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-pro
     #    itertools.product(*[list(range(x)) for x in game_matrix.shape])
     #) # Why is there no 'repeat' variable? Is this already the correct length?
     
-    team_game = game_matrix
-    t = np.expand_dims(np.zeros(list(itertools.repeat(m, n))), axis=n)
-    # print('t', t)
-    # print('t-shape', t.shape)
-    # print(np.concatenate([t, team_game]))
-    # print(team_game)
+    teams_util = np.expand_dims(np.zeros(list(itertools.repeat(m, n))), axis=n)
+
     for profile in all_coordinates_in_game:
         team_util = 0
         for i in range(n):
             team_util += game_matrix[tuple(profile)][i]
         team_util = team_util/n
-        # print(team_util)
-        # team_game[tuple(profile)].append(team_util) #I want to append "team_util" within team_game[tuple(profile)]
-        # well, actually I do not want to append but put it at the first position, hence if profile is (1,2,1) I want to add 4/3 at position 0, to get (4/3, 1, 2, 2)
-        # TODO: create np.array with team utils as elements and then stack to game
-        # print(team_game[tuple(profile)])
-        # print('game shape', team_game.shape)
-        # team_game[tuple(profile)[n] = team_util # why is this not working?
-        # print(team_game[tuple(profile)])
-    # print('new game:', team_game)
+        teams_util[tuple(profile)] = team_util
+    team_game = np.concatenate((teams_util, game_matrix), axis=n, out=None, dtype=None, casting="same_kind")
+    print(team_game)
+ 
     
     a = list(itertools.repeat(m, n)) # creates list of n times number m, indicating how many actions (m) each agent (in total n agents) has
     a.insert(0, m ** n) # adds number m**n on zero's position of a, this is now a tuple indicating how many actions the team and each agent has
@@ -71,7 +63,7 @@ def calculate_utils_n_agents(omega, n, m, game_matrix, player): # omega = tr-pro
                 # print(type(profile[0]))
                 # print('position in game:', game_matrix[tuple(profile[0])])
                 # print('util in game:', game_matrix[tuple(profile[0])][player])
-                util = util + ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1])) * game_matrix[tuple(profile[0])][player]) # ToDo: This is where we should insert a team utility function in case player = team 
+                util = util + ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1])) * team_game[tuple(profile[0])][player]) # ToDo: This is where we should insert a team utility function in case player = team 
                 # calculating expected utility for team_play and non_team_cells, i.e. considering each profile in A multiplying the probability (depending on how many team reasoners) and its utility
                 # print('probability:', ((omega ** profile[1]) * ((1 - omega) ** (n - profile[1]))))
                 # print('util-piece:', util)
