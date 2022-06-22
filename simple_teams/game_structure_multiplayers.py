@@ -23,7 +23,6 @@ from .n_agents_reasoning import team_reasoning_n_agents
 
 import matplotlib.pyplot as plt
 
-# Just allow n_choices to be a list, for asymmetric games?
 class game:
 
     """A game-class to set up and visualize games.
@@ -37,10 +36,11 @@ class game:
         payoffs (list): list of lists with length n_players**n_choices.
             Each item of payoffs is a list of the payoffs for each player
             under the a certain configuration. The order is important.
+        game_payoffs (numpy array): game in the form needed for the "team_reasoning_n_agents"-function
         size (dict): Size of the frame in which the game gets shown. Form: dict(width=2200, height=1570)
     """
 
-    def __init__( # this has to be modifyed for multiple players
+    def __init__(
         self,
         name="3_players_PD",  
         n_players=3,
@@ -57,6 +57,8 @@ class game:
             payoffs (list, optional): [number of choices for the players. This class currently supports
             games with assymmetric payoffs, but not games with unequal numbers of choices.
             Somebody could implement that, eg. as lists that get passed.]. Defaults to [[2, 2], [0, 0], [0, 0], [1, 1]].
+            
+            game_payoffs (numpy array): game in the form needed for the "team_reasoning_n_agents"-function
             size ([dict], optional): [Size of the frame in which the game gets shown]. Defaults to dict(width=2200, height=1570).
         """
 
@@ -77,6 +79,11 @@ class game:
     def show_game(self):
         """
         Plots the defined game as a Sankey diagram.
+        
+            Labeling
+                first node labeled the initial node
+                all non-terminal nodes labeled with players and choices
+                terminal nodes labeled with players, choices and utilities for all players
         """
         T = self.tree
         
@@ -99,11 +106,9 @@ class game:
         choice_counter = 1
         payoff_counter = 0
         for node, level in zip(list(T.nodes()), distances_to_origin):
-            # print(node)
-            #     print(level-1)
-            if level == 1: # first node just labeled the initial node
+            if level == 1:
                 T = nx.relabel_nodes(T, {node: "(" + str(node) + ") init"}, copy=True)
-            if level > 1 and level != np.max(distances_to_origin): # all non-terminal nodes labeled with players and choices
+            if level > 1 and level != np.max(distances_to_origin):
                 T = nx.relabel_nodes(
                     T,
                     {
@@ -116,11 +121,10 @@ class game:
                     },
                     copy=True,
                 )
-                #         print('Player: ' + str(level-1)+', Choice: ' + str(choice_counter))
                 choice_counter += 1
                 if choice_counter > self.n_choices:
                     choice_counter = 1
-            if level == np.max(distances_to_origin): # terminal nodes labeled with players, choices and utilities 
+            if level == np.max(distances_to_origin):
                 T = nx.relabel_nodes(
                     T,
                     {
@@ -138,7 +142,7 @@ class game:
                 )
                 choice_counter += 1
                 payoff_counter += 1
-                if choice_counter > self.n_choices: # players: Why players and not choices?
+                if choice_counter > self.n_choices:
                     choice_counter = 1
                     
         sankey_df = pd.DataFrame(
@@ -162,6 +166,11 @@ class game:
         )
 
     def get_path_array(self):
+        
+        """ Not sure what is happending here: I claim that we can delete this.
+        
+        """
+        
         paths = []
         for node in self.tree:
             if self.tree.degree(node) == 1:  # it's a leaf
@@ -179,8 +188,12 @@ class game:
                     choice_counter = 1
         return paths
 
-    def return_payoffs(self, choices_to_check): # what is the idea of this function and where do we need it?
-
+    def return_payoffs(self, choices_to_check):
+        
+        """ Not sure what is happending here: I claim that we can delete this.
+        
+        """
+        
         return self.payoffs[
             np.where(np.all(np.array(choices_to_check) == self.path_array, axis=1))[0][
                 0
@@ -188,6 +201,16 @@ class game:
         ]
 
     def return_team_reasoners_choice(self, mode="first"):
+    
+    """Returns the stratehy for non-circumspect team reasoning
+    
+    Attributes:
+        mode ("first", "random" or "multiple"): indicates how the team reasoners will decide
+            - first: will play strategy in first equilibrium
+            - random: will play a random strategy from the equilibrium, distributing equally
+            - multiple:
+    
+    """
 
         if mode == "first":
             return np.argmax(np.mean(np.array(self.payoffs), axis=1))
@@ -200,10 +223,15 @@ class game:
             return np.flatnonzero(b == np.max(b))
 
     def return_players_matrix(self, player):
+        """Returns a payoff-matrix for the player
+        
+        Attributes:
+            player (int): from 1 to n, i indicating the i'th individual agent
+            
+        Output:
+            numpy array | n dimension of the shape (n times m)=(m,...,m) a dimension for each player with size of it's choice and the values are the input player's payoff
         """
-        Returns a payoff-matrix for the player, indexed starting with 0.
-        Not 100% sure, whether it's already correct...
-        """
+        
         a = list(np.shape(self.game_payoffs))
         a.pop()
         player_matrix = np.zeros(tuple(a))
@@ -212,6 +240,16 @@ class game:
         return player_matrix
 
     def return_equilibrium(self):
+        
+        """returns all equilibria of the input game
+        
+        if two players, then using nashpy
+        
+        if more than two players, then using gambit; https://gambitproject.readthedocs.io/en/latest/pyapi.html
+        
+        """
+        
+        
         if self.n_players == 2:
             this_game = nash.Game(
                 self.return_players_matrix(0), self.return_players_matrix(1)
@@ -222,11 +260,10 @@ class game:
         else:
             a = list(np.shape(self.game_payoffs))
             a.pop()
-            g = pygambit.Game.new_table(a) # https://gambitproject.readthedocs.io/en/latest/pyapi.html
-            for ix in range(self.n_players): # ix takes int value from 0 to n-1, payoffs
-                for iy, value in np.ndenumerate(self.return_players_matrix(ix)): # iy is a n+1 tuple indicating the played strategies, values are the utils
-                    # print("input value:", ix, iy, value)
-                    g[iy][ix] = Fraction(str(value))#.limit_denominator()
+            g = pygambit.Game.new_table(a)
+            for ix in range(self.n_players):
+                for iy, value in np.ndenumerate(self.return_players_matrix(ix)):
+                    g[iy][ix] = Fraction(str(value))
 
             f = open("current_game2.nfg", "w")
             f.write(g.write())
@@ -249,9 +286,17 @@ class game:
         
         
     def return_non_trs_choice(self, mode="first"):
+        
+        """Returns indices of the choice(s) of a non-team-reasoner
+            
+        Attributes:
+            mode ("first", "random" or "multiple"): indicates how the team reasoners will decide
+                - first: will play strategy in first equilibrium
+                - random: will play a random strategy from the equilibrium, distributing equally
+                - multiple:
+        
         """
-        returns indices of the choice(s) of a non-team-reasoner
-        """
+        
         eq = self.return_equilibrium()  # this ought to be redone in gambit!
 
         if isinstance(eq, str):
@@ -270,9 +315,18 @@ class game:
             elif mode == "multiple":
                 return np.flatnonzero(b == np.max(eq))
 
-    def set_up_TR_strategies(self, steps=100): # this need to be modified for multi players
-        # print(self.name)
-        # Alternative precomputed omega-approach:
+    def set_up_TR_strategies(self, steps=100):
+        
+        """Collects data for the team reasoners
+        
+        Attributes:
+            steps (int): for how many values of omega the game should be checked
+            
+        Output:
+            dict | for each value of omega, we save the omega value and the output of the "team_reasoning_n_agents"-function
+        
+        """
+    
         base_space = np.linspace(0.0, 1.0, steps)
         player_data = collections.OrderedDict()
         # present_utils = collections.OrderedDict()
@@ -292,7 +346,6 @@ class game:
 
         my_omegas, my_utils = [], []
         for at_omega in self.player_data:
-            # print(self.player_data[at_omega][str(player)])
             for this_util in self.player_data[at_omega]["team_utilities"]:
                 my_omegas.append(at_omega), my_utils.append(this_util)
 
@@ -315,7 +368,21 @@ class game:
         
             
 
-    def return_TR_strategy(self, omega): # this needs to be modified for multiple players
+    def return_TR_strategy(self, omega):
+        
+        """Returns the strategy player 1 should play as a team reasoner given a certain omega
+        
+        PROBELM: !!! not suitable for non-symmetric games !!! 
+        this is hard coded to only output player 1's strategy, but we want it to take an input "player" (int) 1 to n, i being the i'th agent, and giving the team reasoners strategy accordingly
+        
+        Attributes:
+            omega (float): team reasoning probability
+            
+       Output:
+           m-tuple (or list? or numpy array?) specifying with what probability the m'th strategy should be played in the equilibria as a team reasoner
+        
+        
+        """
 
         # Fix problem with omega = 0,1
         if not hasattr(self, "player_data"):
@@ -324,16 +391,15 @@ class game:
         known_omegas = np.array(list(self.player_data.keys()))
         upper = known_omegas[known_omegas > omega].min()
         lower = known_omegas[known_omegas < omega].max()
-        upper_strategy = self.player_data[upper]["1_team"] # TODO: adapt to possibly asymmetric games; this now only works for player 1
+        upper_strategy = self.player_data[upper]["1_team"]
         lower_strategy = self.player_data[lower]["1_team"]
 
-        # print(np.array_equal(upper_strategy, lower_strategy))
         if np.array_equal(upper_strategy, lower_strategy):
             return lower_strategy
         else:
             additional_omega = team_reason(
                 self.return_players_matrix(0), self.return_players_matrix(1), omega
-            ) # this needs to be modified for multiple players
+            )
             self.player_data[omega] = additional_omega
             return additional_omega["1_team"]
 
