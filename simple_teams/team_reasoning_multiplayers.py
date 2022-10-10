@@ -3,7 +3,7 @@ import itertools
 import pygambit
 from fractions import Fraction
 import os
-from .expected_util_nagents import calculate_utils_n_agents
+from .expected_util_multiplayers import calculate_utils_n_agents
 
 
 def team_reasoning_n_agents(m, n, game, omega): 

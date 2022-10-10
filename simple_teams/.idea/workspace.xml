@@ -5,10 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8bc2c040-9f43-4bc8-b1c8-e25ac8a07b3a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/expected_util_nagents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.ipynb_checkpoints/single_run_game_mixture-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../.ipynb_checkpoints/single_run_game_mixture-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/team_reasoning.py" beforeDir="false" afterPath="$PROJECT_DIR$/team_reasoning.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../single_run_game_mixture.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/../single_run_game_mixture.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/expected_util_nagents.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/n_agents_reasoning.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,14 +35,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/Users/leylaade/Documents/PhD/Programming/MesaTutorial/uti/simple_teams",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/leylaade/Documents/PhD/Programming/MesaTutorial/uti/simple_teams&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

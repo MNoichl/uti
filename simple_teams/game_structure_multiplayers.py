@@ -19,7 +19,7 @@ import collections
 import bisect
 
 from .team_reasoning import team_reason
-from .n_agents_reasoning import team_reasoning_n_agents
+from .team_reasoning_multiplayers import team_reasoning_n_agents
 
 import matplotlib.pyplot as plt
 
@@ -188,8 +188,7 @@ class game:
                     choice_counter = 1
         return paths
 
-    def return_payoffs(self, choices_to_check):
-        
+    def return_payoffs(self, choices_to_check):   
         """ Not sure what is happending here: I claim that we can delete this.
         
         """
@@ -200,17 +199,17 @@ class game:
             ]
         ]
 
-    def return_team_reasoners_choice(self, mode="first"):
-    
-    """Returns the stratehy for non-circumspect team reasoning
-    
-    Attributes:
-        mode ("first", "random" or "multiple"): indicates how the team reasoners will decide
+    def return_team_reasoners_choice(self, mode="first"): 
+        
+        """Returns the strategy for non-circumspect team reasoning
+
+        Attributes:
+            mode ("first", "random" or "multiple"): indicates how the team reasoners will decide
             - first: will play strategy in first equilibrium
             - random: will play a random strategy from the equilibrium, distributing equally
             - multiple:
-    
-    """
+        
+        """
 
         if mode == "first":
             return np.argmax(np.mean(np.array(self.payoffs), axis=1))
