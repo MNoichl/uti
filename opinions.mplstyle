@@ -32,10 +32,11 @@ ytick.minor.size: 0
 
 text.color: black
 
-axes.titlesize: 22
+axes.titlesize: 26
 axes.titlelocation: left
 axes.titleweight: bold
 axes.titlepad: 20
+axes.labelpad: 13
 
 
 axes.labelcolor: black
@@ -44,7 +45,6 @@ axes.labelweight: bold
 
 xaxis.labellocation: right
 yaxis.labellocation: top
-
 
 
 
