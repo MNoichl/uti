@@ -39,19 +39,19 @@ axes.titlepad: 20
 
 
 axes.labelcolor: black
-axes.labelsize: 15
+axes.labelsize: 17
 axes.labelweight: bold
 
-# xaxis.labellocation: right
-# yaxis.labellocation: top
+xaxis.labellocation: right
+yaxis.labellocation: top
 
 
 
 
 xtick.color: 000000
 ytick.color: 000000
-ytick.labelsize: 13
-xtick.labelsize: 13
+ytick.labelsize: 15
+xtick.labelsize: 15
 
 
 
