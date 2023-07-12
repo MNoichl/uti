@@ -1,0 +1,94 @@
+def act(self, est1: float, est2: float, est3: float, type1, type2, type3, equibreak1, equibreak2, equibreak3):
+        """ m is number of players, n is number of actions per player
+        takes the equilibrium and players types and returns the acts they play and their fitness gains/losses
+        equibreak=probability with which players will play strat 2 over 1 if there are 2 equilibria"""
+        # unpack equilibria
+        # LA: these could possibly be multiple; the 'equibreak' is key for the multi-play case how to deal with multiple equilibria
+        eq1 = self.return_tr_strategy(est1)
+        eq2 = self.return_tr_strategy(est2)
+        eq3 = self.return_tr_strategy(est3)
+        print(eq1)
+        print(eq2)
+        print(eq3)
+        # find out strategies
+        if type1 == 0:
+            acts1 = eq1['1_individual']
+        else:
+            acts1 = eq1['1_team']
+        if type2 == 0:
+            acts2 = eq2['2_individual']
+        else:
+            acts2 = eq2['2_team']
+        if type3 == 0:
+            acts3 = eq3['3_individual']
+        else:
+            acts3 = eq3['3_team']
+        if len(acts1) > 1:
+            acts1 = random.choice(acts1) #acts1[binomial(1, 1-equibreak1)]
+        else:
+            acts1 = acts1[0]
+        if len(acts2) > 1:
+            acts2 = random.choice(acts2) #acts2[binomial(1, 1-equibreak2)]
+        else:
+            acts2 = acts2[0]
+        if len(acts3) > 1:
+            acts3 = random.choice(acts3) #acts3[binomial(1, 1-equibreak3)]
+        else:
+            acts3 = acts3[0]
+        # calculate fitnessgain
+        strats = self.actstoStrats([acts1, acts2, acts3])
+        fitnessgain = self.payoffs[tuple(strats)]
+        print(acts1)
+        print(type(acts1[0]))
+        a1 = self.translateact(acts1)
+        a2 = self.translateact(acts2)
+        a3 = self.translateact(acts3)
+        #print(strats)
+        #print(fitnessgain)
+        # calculate information gain (whether from the point of the other player there is a unique profile and team reasoners and individual reasoners play different actions in it)
+
+        isTeam3 = None
+        # print(set(tuple(x) for x in eq1['3_team']))
+        teamact1_3 = list(set(tuple(x) for x in eq1['3_team'])-set(tuple(x) for x in eq1['3_individual']))
+        individualact1_3 = list(set(tuple(x) for x in eq1['3_individual']) - set(tuple(x) for x in eq1['3_team']))
+        teamact2_3 = list(set(tuple(x) for x in eq2['3_team']) - set(tuple(x) for x in eq2['3_individual']))
+        individualact2_3 = list(set(tuple(x) for x in eq2['3_individual']) - set(tuple(x) for x in eq2['3_team']))
+        if acts3 in teamact1_3:
+            isTeam3 = True
+        elif acts3 in teamact2_3:
+            isTeam3 = True
+        elif acts3 in individualact1_3:
+            isTeam3 = False
+        elif acts3 in individualact2_3:
+            isTeam3 = False
+
+        isTeam2 = None
+        teamact1_2 = list(set(tuple(x) for x in eq1['2_team']) - set(tuple(x) for x in eq1['2_individual']))
+        individualact1_2 = list(set(tuple(x) for x in eq1['2_individual']) - set(tuple(x) for x in eq1['2_team']))
+        teamact3_2 = list(set(tuple(x) for x in eq3['2_team']) - set(tuple(x) for x in eq3['2_individual']))
+        individualact3_2 = list(set(tuple(x) for x in eq3['2_individual']) - set(tuple(x) for x in eq3['2_team']))
+        if acts2 in teamact3_2:
+            isTeam2 = True
+        elif acts2 in teamact1_2:
+            isTeam2 = True
+        elif acts2 in individualact3_2:
+            isTeam2 = False
+        elif acts2 in individualact1_2:
+            isTeam2 = False
+
+        isTeam1 = None # in the two player case we had one player checking the other ones action for compatability with the team action. however, this is not straight forwardly adaptable to the three players case
+        # here we let the other two agents check on the third one together
+        teamact2_1 = list(set(tuple(x) for x in eq2['1_team']) - set(tuple(x) for x in eq2['1_individual']))
+        individualact2_1 = list(set(tuple(x) for x in eq2['1_individual']) - set(tuple(x) for x in eq2['1_team']))
+        teamact3_1 = list(set(tuple(x) for x in eq3['1_team']) - set(tuple(x) for x in eq3['1_individual']))
+        individualact3_1 = list(set(tuple(x) for x in eq3['1_individual']) - set(tuple(x) for x in eq3['1_team']))
+        if acts1 in teamact2_1:
+            isTeam1 = True
+        elif acts1 in teamact3_1:
+            isTeam1 = True
+        elif acts1 in individualact2_1:
+            isTeam1 = False
+        elif acts1 in individualact3_1:
+            isTeam1 = False
+
+        return a1, a2, a3, acts1, acts2, acts3, tuple(fitnessgain), isTeam3, isTeam2, isTeam1
